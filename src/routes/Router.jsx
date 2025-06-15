@@ -5,17 +5,42 @@ import Login from '../pages/auth/Login';
 import Orders from '../pages/orders/Orders';
 import Booking from '../pages/book/Booking';
 import AddBooking from '../pages/book/AddBooking';
+import ProtectedRoute from './ProtectedRoute';
+import OrderDetail from '../pages/orders/OrderDetail';
 
 function AppRouter() {
     return (
         <Routes>
-            <Route path="/" element={<HomePage />} />
             <Route path="/login" element={<Login />} />
-            <Route path="/orders" element={<Orders />} />
-            <Route path="/booking" element={<Booking />} />
-            <Route path="/booking/add" element={<AddBooking />} />
+
+            {/* Protected Routes */}
+            <Route path="/" element={
+                <ProtectedRoute>
+                    <HomePage />
+                </ProtectedRoute>
+            } />
+            <Route path="/orders" element={
+                <ProtectedRoute>
+                    <Orders />
+                </ProtectedRoute>
+            } />
+            <Route path="/orders/orderDetail/:id" element={
+                <ProtectedRoute>
+                    <OrderDetail />
+                </ProtectedRoute>
+            } />
+            <Route path="/booking" element={
+                <ProtectedRoute>
+                    <Booking />
+                </ProtectedRoute>
+            } />
+            <Route path="/booking/add" element={
+                <ProtectedRoute>
+                    <AddBooking />
+                </ProtectedRoute>
+            } />
         </Routes>
     );
 }
 
-export default AppRouter; 
+export default AppRouter;

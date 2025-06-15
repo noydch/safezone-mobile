@@ -7,6 +7,9 @@ import { IoIosListBox } from "react-icons/io";
 import { LuNotebookPen } from "react-icons/lu";
 import { MdLogout } from "react-icons/md";
 import Cart from '../cart/Cart';
+import useSafezoneStore from '../../store/safezoneStore';
+import { FaPerson } from 'react-icons/fa6';
+import { FaUser } from 'react-icons/fa';
 
 const Navbar = ({ children }) => {
     const navigate = useNavigate()
@@ -14,6 +17,7 @@ const Navbar = ({ children }) => {
     const [isCartOpen, setIsCartOpen] = useState(false);
     const location = useLocation();
     const currentPath = location.pathname;
+    const carts = useSafezoneStore((state) => state.carts);
 
     const toggleDropdown = () => {
         setIsDropdownOpen(!isDropdownOpen);
@@ -59,7 +63,7 @@ const Navbar = ({ children }) => {
                                 className="cursor-pointer md:text-[32px] lg:text-[36px]"
                             />
                             <div className="absolute -top-1 -right-1 bg-red-500 w-[16px] h-[16px] md:w-[18px] md:h-[18px] flex items-center justify-center font-medium text-white text-[10px] md:text-[12px] rounded-full">
-                                <span>10</span>
+                                <span>{carts.length}</span>
                             </div>
                         </div>
                     )}

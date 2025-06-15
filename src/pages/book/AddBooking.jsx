@@ -1,72 +1,74 @@
-import React, { useState, useEffect } from 'react'
-import Navbar from '../../components/navbar/Navbar'
-import { Form, Input, DatePicker, Select, Button, Radio, message, Spin } from 'antd'
-import { MdArrowBackIos } from 'react-icons/md'
-import { useNavigate } from 'react-router'
-import axios from 'axios'
-import ApiPath from '../../api/apiPath'
-import moment from 'moment'
+import React, { useState, useEffect } from 'react';
+import { Form, Input, DatePicker, Select, message, Spin, Radio } from 'antd';
+import axios from 'axios';
+import ApiPath from '../../api/apiPath';
+import moment from 'moment';
+import Navbar from '../../components/navbar/Navbar';
+import { MdArrowBackIos } from 'react-icons/md';
+import { useNavigate } from 'react-router';
 
-const { Option } = Select
+const { Option } = Select;
 
 const AddBooking = () => {
-    const navigate = useNavigate()
-    const [form] = Form.useForm()
-    const [customers, setCustomers] = useState([])
-    const [tables, setTables] = useState([])
-    const [loadingCustomers, setLoadingCustomers] = useState(false)
-    const [loadingTables, setLoadingTables] = useState(false)
-    const [submitting, setSubmitting] = useState(false)
-    const [isNewCustomer, setIsNewCustomer] = useState(false)
+    const navigate = useNavigate();
+    const [form] = Form.useForm();
+    const [customers, setCustomers] = useState([]);
+    const [tables, setTables] = useState([]);
+    const [loadingCustomers, setLoadingCustomers] = useState(false);
+    const [loadingTables, setLoadingTables] = useState(false);
+    const [submitting, setSubmitting] = useState(false);
+    const [isNewCustomer, setIsNewCustomer] = useState(false);
 
     useEffect(() => {
-        fetchCustomers()
-        fetchTables()
-    }, [])
+        if (!isNewCustomer) {
+            fetchCustomers();
+        }
+        fetchTables();
+    }, []);
 
     const fetchCustomers = async () => {
-        setLoadingCustomers(true)
+        setLoadingCustomers(true);
         try {
-            const response = await axios.get(ApiPath.getCustomers)
-            setCustomers(response.data)
+            const response = await axios.get(ApiPath.getCustomers);
+            setCustomers(response.data);
         } catch (error) {
-            console.error("Error fetching customers:", error)
-            message.error('ບໍ່ສາມາດໂຫຼດຂໍ້ມູນລູກຄ້າໄດ້')
+            console.error("Error fetching customers:", error);
+            message.error('ບໍ່ສາມາດໂຫຼດຂໍ້ມູນລູກຄ້າໄດ້');
         } finally {
-            setLoadingCustomers(false)
+            setLoadingCustomers(false);
         }
-    }
+    };
 
     const fetchTables = async () => {
-        setLoadingTables(true)
+        setLoadingTables(true);
         try {
-            const response = await axios.get(ApiPath.getTable)
-            setTables(response.data.filter(table => table.status === 'ວ່າງ'))
+            const response = await axios.get(ApiPath.getTable);
+            setTables(response.data.filter(table => table.status === 'ວ່າງ'));
         } catch (error) {
-            console.error("Error fetching tables:", error)
-            message.error('ບໍ່ສາມາດໂຫຼດຂໍ້ມູນໂຕະໄດ້')
+            console.error("Error fetching tables:", error);
+            message.error('ບໍ່ສາມາດໂຫຼດຂໍ້ມູນໂຕະໄດ້');
         } finally {
-            setLoadingTables(false)
+            setLoadingTables(false);
         }
-    }
+    };
 
     const handleCustomerToggleChange = (e) => {
-        const newIsNewCustomer = e.target.value
-        setIsNewCustomer(newIsNewCustomer)
+        const newIsNewCustomer = e.target.value;
+        setIsNewCustomer(newIsNewCustomer);
         form.setFieldsValue({
             customerId: undefined,
             fname: undefined,
             lname: undefined,
             phone: undefined
-        })
+        });
         if (!newIsNewCustomer && customers.length === 0) {
-            fetchCustomers()
+            fetchCustomers();
         }
-    }
+    };
 
     const handleSubmit = async (values) => {
-        setSubmitting(true)
-        let customerIdToUse = values.customerId
+        setSubmitting(true);
+        let customerIdToUse = values.customerId;
 
         try {
             if (isNewCustomer) {
@@ -74,67 +76,63 @@ const AddBooking = () => {
                     fname: values.fname,
                     lname: values.lname,
                     phone: values.phone,
-                }
+                };
                 try {
-                    const customerResponse = await axios.post(ApiPath.createCustomer, newCustomerPayload)
-                    customerIdToUse = customerResponse.data.id
+                    const customerResponse = await axios.post(ApiPath.createCustomer, newCustomerPayload);
+                    customerIdToUse = customerResponse.data.id;
                 } catch (customerError) {
-                    console.error("Error creating customer:", customerError.response?.data || customerError.message)
-                    const customerErrorMessage = customerError.response?.data?.message || 'ເກີດຂໍ້ຜິດພາດໃນການສ້າງລູກຄ້າ'
                     if (customerError.response?.status === 409) {
-                        message.error('ເບີໂທນີ້ມີລູກຄ້າຢູ່ແລ້ວ.')
+                        message.error('ເບີໂທນີ້ມີລູກຄ້າຢູ່ແລ້ວ.');
                     } else {
-                        message.error(customerErrorMessage)
+                        message.error('ເກີດຂໍ້ຜິດພາດໃນການສ້າງລູກຄ້າ');
                     }
-                    setSubmitting(false)
-                    return
+                    setSubmitting(false);
+                    return;
                 }
             }
 
             if (!customerIdToUse) {
-                message.error('ກະລຸນາເລືອກ ຫຼື ເພີ່ມລູກຄ້າກ່ອນ.')
-                setSubmitting(false)
-                return
+                message.error('ກະລຸນາເລືອກ ຫຼື ເພີ່ມລູກຄ້າກ່ອນ.');
+                setSubmitting(false);
+                return;
             }
 
             const reservationPayload = {
                 customerId: customerIdToUse,
                 tableId: values.tableId,
                 reservationTime: moment(values.reservationTime).toISOString(),
-            }
+            };
 
-            await axios.post(ApiPath.createReservation, reservationPayload)
-            message.success('ສ້າງການຈອງສຳເລັດ!')
-            navigate('/booking')
+            await axios.post(ApiPath.createReservation, reservationPayload);
+            message.success('ສ້າງການຈອງສຳເລັດ!');
+            navigate('/booking');
 
         } catch (error) {
-            console.error("Error creating reservation:", error.response?.data || error.message)
-            const errorMessage = error.response?.data?.message || 'ເກີດຂໍ້ຜິດພາດໃນການສ້າງການຈອງ'
-            message.error(errorMessage)
+            message.error('ເກີດຂໍ້ຜິດພາດໃນການສ້າງການຈອງ');
         } finally {
-            setSubmitting(false)
+            setSubmitting(false);
         }
-    }
+    };
 
     return (
         <Navbar>
             <div className='px-2 md:px-10 lg:px-10'>
-                <div className='my-2 flex items-center justify-between cursor-pointer'>
+                <div className='my-2 flex items-center justify-between'>
                     <div onClick={() => navigate(-1)}
-                        className='flex items-center gap-x-1 flex-[1]'>
+                        className='flex items-center gap-x-1 flex-[1] cursor-pointer'>
                         <MdArrowBackIos className='text-[14px] md:text-[16px] lg:text-[18px]' />
                         <span className='text-[12px] md:text-[14px] lg:text-[16px]'>ກັບຄືນ</span>
                     </div>
-                    <h2 className='text-[16px] md:text-[18px] lg:text-[20px] font-medium flex-[1] text-center'>ເພີ່ມການຈອງ</h2>
+                    <h2 className='text-[16px] md:text-[18px] lg:text-[20px] font-medium flex-[1] text-center'>ເພີ່ມລາຍການຈອງ</h2>
                     <div className='flex-[1]'></div>
                 </div>
-
-                <div className='bg-white rounded p-4 md:p-6 lg:p-8'>
+                <div className='bg-white rounded p-2 md:p-4 lg:p-4'>
                     <Spin spinning={loadingCustomers || loadingTables || submitting}>
                         <Form
                             form={form}
                             layout="vertical"
                             onFinish={handleSubmit}
+                            name="bookingForm"
                             className="max-w-[600px] mx-auto"
                         >
                             <Form.Item label="ເລືອກ ຫຼື ເພີ່ມລູກຄ້າ">
@@ -213,32 +211,24 @@ const AddBooking = () => {
                                 <DatePicker
                                     showTime
                                     format="DD/MM/YYYY HH:mm"
-                                    className="w-full"
+                                    style={{ width: '100%' }}
                                 />
                             </Form.Item>
 
-                            <Form.Item className="flex justify-end gap-4">
-                                <Button
-                                    onClick={() => navigate(-1)}
-                                    className="h-[40px] px-6"
-                                >
-                                    ຍົກເລີກ
-                                </Button>
-                                <Button
-                                    type="primary"
-                                    htmlType="submit"
-                                    className="h-[40px] px-6 bg-red-500 hover:bg-red-600"
-                                    loading={submitting}
+                            <Form.Item>
+                                <button
+                                    type="submit"
+                                    className='w-full h-[40px] font-medium text-[14px] rounded bg-red-500 text-center text-white border-2 border-transparent hover:border-2 hover:bg-transparent hover:border-red-500 hover:text-red-500 duration-300 cursor-pointer'
                                 >
                                     ບັນທຶກ
-                                </Button>
+                                </button>
                             </Form.Item>
                         </Form>
                     </Spin>
                 </div>
             </div>
         </Navbar>
-    )
-}
+    );
+};
 
-export default AddBooking 
+export default AddBooking; 
